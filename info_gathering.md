@@ -23,3 +23,15 @@ We directly interact with the target at this stage. Before performing active inf
 ```bash
 whois <domain> | grep -e 'regex here'
 ```
+
+## nslookup, dig, 
+```bash
+export TARGET=www.facebook.com
+dig facebook.com @1.1.1.1
+dig a www.facebook.com @1.1.1.1
+dig -x 31.13.92.36 @1.1.1.1
+dig any google.com @8.8.8.8
+nslookup -query=A $TARGET
+nslookup -query=PTR 31.13.92.36
+nslookup -query=ANY $TARGET
+```
