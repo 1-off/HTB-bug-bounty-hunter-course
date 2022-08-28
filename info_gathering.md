@@ -24,7 +24,7 @@ We directly interact with the target at this stage. Before performing active inf
 whois <domain> | grep -e 'regex here'
 ```
 
-## nslookup, dig, 
+## DNS lookup
 ```bash
 export TARGET=www.facebook.com
 dig facebook.com @1.1.1.1
@@ -35,3 +35,23 @@ nslookup -query=A $TARGET
 nslookup -query=PTR 31.13.92.36
 nslookup -query=ANY $TARGET
 ```
+
+## Passive Subdomain Enumeration
+- https://censys.io
+- https://crt.sh
+
+```bash
+export TARGET="facebook.com"
+curl -s "https://crt.sh/?q=${TARGET}&output=json" | jq -r '.[] | "\(.name_value)\n\(.common_name)"' | sort -u > "${TARGET}_crt.sh.txt"
+
+curl -s 	Issue the request with minimal output.
+https://crt.sh/?q=<DOMAIN>&output=json 	Ask for the json output.
+jq -r '.[]' "\(.name_value)\n\(.common_name)"' 	Process the json output and print certificate's name vale and common name one per line.
+sort -u 	Sort alphabetically the output provided and removes duplicates.
+
+export TARGET="facebook.com"
+export PORT="443"
+openssl s_client -ign_eof 2>/dev/null <<<$'HEAD / HTTP/1.0\r\n\r' -connect "${TARGET}:${PORT}" | openssl x509 -noout -text -in - | grep 'DNS' | sed -e 's|DNS:|\n|g' -e 's|^\*.*||g' | tr -d ',' | sort -u
+```
+
+
