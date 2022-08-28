@@ -19,6 +19,8 @@ We do not interact directly with the target at this stage. Instead, we collect p
 ## Active information gathering
 We directly interact with the target at this stage. Before performing active information gathering, we need to ensure we have the required authorization to test. Otherwise, we will likely be engaging in illegal activities. Some of the techniques used in the active information gathering stage include port scanning, DNS enumeration, directory brute-forcing, virtual host enumeration, and web application crawling/spidering.
 
+
+# Domain and subdomains
 ## whois
 ```bash
 whois <domain> | grep -e 'regex here'
@@ -39,6 +41,7 @@ nslookup -query=ANY $TARGET
 ## Passive Subdomain Enumeration
 - https://censys.io
 - https://crt.sh
+- https://github.com/laramies/theHarvester
 
 ```bash
 export TARGET="facebook.com"
@@ -54,4 +57,46 @@ export PORT="443"
 openssl s_client -ign_eof 2>/dev/null <<<$'HEAD / HTTP/1.0\r\n\r' -connect "${TARGET}:${PORT}" | openssl x509 -noout -text -in - | grep 'DNS' | sed -e 's|DNS:|\n|g' -e 's|^\*.*||g' | tr -d ',' | sort -u
 ```
 
+### harvester
+```bash
+cat sources.txt
 
+baidu
+bufferoverun
+crtsh
+hackertarget
+otx
+projecdiscovery
+rapiddns
+sublist3r
+threatcrowd
+trello
+urlscan
+vhost
+virustotal
+zoomeye
+```
+```bash
+export TARGET="facebook.com"
+cat sources.txt | while read source; do theHarvester -d "${TARGET}" -b $source -f "${source}_${TARGET}";done
+```
+Extract all subdomains
+```bash
+cat *.json | jq -r '.hosts[]' 2>/dev/null | cut -d':' -f 1 | sort -u > "${TARGET}_theHarvester.txt"
+cat facebook.com_*.txt | sort -u > facebook.com_subdomains_passive.txt
+cat facebook.com_subdomains_passive.txt | wc -l
+```
+
+# Passive Infrastructure Identification
+Visiting ```https://sitereport.netcraft.com/?url=```
+Some interesting details we can observe from the report are:
+- Background 	General information about the domain, including the date it was first seen by Netcraft crawlers.
+- Network 	Information about the netblock owner, hosting company, nameservers, etc.
+- Hosting history 	Latest IPs used, webserver, and target OS. Sometimes we can spot the actual IP address from the webserver before it was placed behind a load balancer, web application firewall, or IDS, allowing us to connect directly to it if the configuration allows it. 
+
+- checking old versions: https://web.archive.org/  It can very likely lead to us discovering forgotten assets, pages, etc., which can lead to discovering a flaw.
+```bash
+go get github.com/tomnomnom/waybackurls
+waybackurls -dates https://facebook.com > waybackurls.txt
+cat waybackurls.txt
+```
