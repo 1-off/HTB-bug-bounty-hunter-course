@@ -1,25 +1,4 @@
 
-
-## Domains and Subdomains
-Bug bounty programs will often set the scope as something such as *.inlanefreight.com, meaning that all subdomains of inlanefreight.com, in this example, are in-scope (i.e., acme.inlanefreight.com, admin.inlanefreight.com, and so forth and so on). We may also discover subdomains of subdomains. For example, let's assume we discover something along the lines of admin.inlanefreight.com. We could then run further subdomain enumeration against this subdomain and perhaps find dev.admin.inlanefreight.com as a very enticing target. 
-There are many ways to find subdomains (both passively and actively) which we will cover later in this module.
-
-## ip ranges
-Unless we are constrained to a very specific scope, we want to find out as much about our target as possible. Finding additional IP ranges owned by our target may lead to discovering other domains and subdomains and open up our possible attack surface even wider.
-
-## Infrastructure
-
-## Virtual Hosts
-Lastly, we want to enumerate virtual hosts (vhosts), which are similar to subdomains but indicate that an organization is hosting multiple applications on the same web server. We will cover vhost enumeration later in the module as well.
-
-
-## Passive gathering
-We do not interact directly with the target at this stage. Instead, we collect publicly available information using search engines, whois, certificate information, etc. The goal is to obtain as much information as possible to use as inputs to the active information gathering phase.
-
-## Active information gathering
-We directly interact with the target at this stage. Before performing active information gathering, we need to ensure we have the required authorization to test. Otherwise, we will likely be engaging in illegal activities. Some of the techniques used in the active information gathering stage include port scanning, DNS enumeration, directory brute-forcing, virtual host enumeration, and web application crawling/spidering.
-
-
 # Domain and subdomains
 ## whois
 ```bash
@@ -86,7 +65,7 @@ cat *.json | jq -r '.hosts[]' 2>/dev/null | cut -d':' -f 1 | sort -u > "${TARGET
 cat facebook.com_*.txt | sort -u > facebook.com_subdomains_passive.txt
 cat facebook.com_subdomains_passive.txt | wc -l
 ```
-
+---------------------------------------------------------------
 # Passive Infrastructure Identification
 Visiting ```https://sitereport.netcraft.com/?url=```
 Some interesting details we can observe from the report are:
@@ -99,4 +78,56 @@ Some interesting details we can observe from the report are:
 go get github.com/tomnomnom/waybackurls
 waybackurls -dates https://facebook.com > waybackurls.txt
 cat waybackurls.txt
+```
+
+--------------------------------------------------------------
+# Active Infrastructure Identification
+## Web servers
+### HTTP Header
+X-Powered-By header: This header can tell us what the web app is using. We can see values like PHP, ASP.NET, JSP, etc.
+Cookies: Cookies are another attractive value to look at as each technology by default has its cookies. Some of the default cookie values are:
+```bash
+curl -I 'http://${TARGET}'
+HTTP/1.1 200 OK
+Date: Thu, 23 Sep 2021 15:10:42 GMT
+Server: Apache/2.4.25 (Debian)
+X-Powered-By: PHP/7.3.5
+Link: <http://192.168.10.10/wp-json/>; rel="https://api.w.org/"
+Content-Type: text/html; charset=UTF-8
+
+
+HTTP/1.1 200 OK
+Host: randomtarget.com
+Date: Thu, 23 Sep 2021 15:12:21 GMT
+Connection: close
+X-Powered-By: PHP/7.4.21
+Set-Cookie: PHPSESSID=gt02b1pqla35cvmmb2bcli96ml; path=/ 
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+Content-type: text/html; charset=UTF-8
+```
+#### https://github.com/urbanadventurer/WhatWeb
+Recognizes web technologies, including content management systems (CMS), blogging platforms, statistic/analytics packages, JavaScript libraries, web servers, and embedded devices.
+```bash
+whatweb -a3 https://www.facebook.com -v
+```
+
+#### https://www.wappalyzer.com/
+Find out the technology stack of any website. Create lists of websites that use certain technologies, with company and contact details. Use our tools for lead generation, market analysis and competitor research.
+
+#### WafW00f 
+it is a web application firewall (WAF) fingerprinting tool that sends requests and analyses responses to determine if a security solution is in place. We can install it with the following command
+```bash
+sudo apt install wafw00f -y
+wafw00f -v https://www.tesla.com
+```
+#### Aquatone
+It is a tool for automatic and visual inspection of websites across many hosts and is convenient for quickly gaining an overview of HTTP-based attack surfaces by scanning a list of configurable ports, visiting the website with a headless Chrome browser, and taking and screenshot.
+```bash
+sudo apt install golang chromium-driver
+go get github.com/michenriksen/aquatone
+export PATH="$PATH":"$HOME/go/bin"
+
+cat facebook_aquatone.txt | aquatone -out ./aquatone -screenshot-timeout 1000
 ```
