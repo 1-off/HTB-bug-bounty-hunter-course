@@ -156,7 +156,7 @@ nslookup -type=any -query=AXFR zonetransfer.me nsztm1.digi.ninja
 #### Initiating an AXFR zone-transfer request from a secondary server 
 It is as simple as using the following dig commands, where zonetransfer.me is the domain that we want to initiate a zone transfer for. First, we need to get the list of DNS servers for the domain:
 ```bash
- dig +short ns zonetransfer.me
+ dig +short ns zonetransfer.me @1.1.1.1
  nsztm1.digi.ninja.
  nsztm2.digi.ninja.
  ```
