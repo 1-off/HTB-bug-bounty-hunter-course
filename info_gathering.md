@@ -134,7 +134,10 @@ cat facebook_aquatone.txt | aquatone -out ./aquatone -screenshot-timeout 1000
 --------------------------------------
 # Active Subdomain Enumeration
 ## ZoneTransfers
-Identifying Nameservers 
+#### AXFR Vulnerability 
+AXFR offers no authentication, so any client can ask a DNS server for a copy of the entire zone. This means that unless some kind of protection is introduced, an attacker can get a list of all hosts for a domain, which gives them a lot of potential attack vectors. Solution, DNS server should be configured to only allow zone transfers from trusted IP addresses. Additionally, it’s also recommended to use transaction signatures (TSIG) for zone transfers to prevent IP spoofing attempts. But If we manage to perform a successful zone transfer for a domain, there is no need to continue enumerating this particular domain as this will extract all the available information.
+
+#### Identifying Nameservers 
 ```bash
 nslookup -type=NS zonetransfer.me
 
@@ -145,23 +148,24 @@ Non-authoritative answer:
 zonetransfer.me	nameserver = nsztm2.digi.ninja.
 zonetransfer.me	nameserver = nsztm1.digi.ninja.
 ```
-Testing for ANY and AXFR Zone Transfer
+#### Testing for ANY and AXFR Zone Transfer
 -type=any and -query=AXFR
 ```bash
 nslookup -type=any -query=AXFR zonetransfer.me nsztm1.digi.ninja
 ```
-Initiating an AXFR zone-transfer request from a secondary server is as simple as using the following dig commands, where zonetransfer.me is the domain that we want to initiate a zone transfer for. First, we need to get the list of DNS servers for the domain:
+#### Initiating an AXFR zone-transfer request from a secondary server 
+It is as simple as using the following dig commands, where zonetransfer.me is the domain that we want to initiate a zone transfer for. First, we need to get the list of DNS servers for the domain:
 ```bash
  dig +short ns zonetransfer.me
  nsztm1.digi.ninja.
  nsztm2.digi.ninja.
  ```
- Now, we can get initiate an AXFR request to get a copy of the zone from the primary server:
+ #### Request a copy of the zone
+ Now, we can get initiate an AXFR request to get a copy of the zone from the primary server
  ```bash
  dig axfr zonetransfer.me @nsztm1.digi.ninja.
  ; <<>> DiG 9.8.3-P1 <<>> axfr zonetransfer.me @nsztm1.digi.ninja. 
 ;; global options: +cmd zonetransfer.me. 7200 IN SOA nsztm1.digi.ninja. robin.digi.ninja. 2017042001 172800 900 1209600 3600 
 (...)
  ```
-#### AXFR Vulnerability 
-AXFR offers no authentication, so any client can ask a DNS server for a copy of the entire zone. This means that unless some kind of protection is introduced, an attacker can get a list of all hosts for a domain, which gives them a lot of potential attack vectors. Solution, DNS server should be configured to only allow zone transfers from trusted IP addresses. Additionally, it’s also recommended to use transaction signatures (TSIG) for zone transfers to prevent IP spoofing attempts. But If we manage to perform a successful zone transfer for a domain, there is no need to continue enumerating this particular domain as this will extract all the available information.
+
