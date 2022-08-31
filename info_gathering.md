@@ -168,4 +168,21 @@ It is as simple as using the following dig commands, where zonetransfer.me is th
 ;; global options: +cmd zonetransfer.me. 7200 IN SOA nsztm1.digi.ninja. robin.digi.ninja. 2017042001 172800 900 1209600 3600 
 (...)
  ```
+ 
+### GoBuster
+Gobuster is a tool that we can use to perform subdomain enumeration. It is especially interesting for us the patterns options as we have learned some naming conventions from the passive information gathering we can use to discover new subdomains following the same pattern.
+```bash
+@htb[/htb]$ export TARGET="facebook.com"
+@htb[/htb]$ export NS="d.ns.facebook.com"
+@htb[/htb]$ export WORDLIST="numbers.txt"
+@htb[/htb]$ gobuster dns -q -r "${NS}" -d "${TARGET}" -w "${WORDLIST}" -p ./patterns.txt -o "gobuster_${TARGET}.txt"
 
+Found: lert-api-shv-01-sin6.facebook.com
+Found: atlas-pp-shv-01-sin6.facebook.com
+Found: atlas-pp-shv-02-sin6.facebook.com
+Found: atlas-pp-shv-03-sin6.facebook.com
+Found: lert-api-shv-03-sin6.facebook.com
+Found: lert-api-shv-02-sin6.facebook.com
+Found: lert-api-shv-04-sin6.facebook.com
+Found: atlas-pp-shv-04-sin6.facebook.com
+```
